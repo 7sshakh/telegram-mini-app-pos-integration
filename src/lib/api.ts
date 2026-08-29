@@ -158,7 +158,7 @@ export const pushCatalogSchema = z.object({
           description: z.string().max(600).optional(),
           price: z.coerce.number().int().min(0),
           oldPrice: z.coerce.number().int().min(0).optional(),
-          imageUrl: z.string().url().max(600).optional(),
+          imageUrl: z.string().max(2000000).optional(),
           isAvailable: z.boolean().default(true),
           stock: z.coerce.number().int().min(0).nullable().optional(),
           modifiers: z

@@ -1,0 +1,9 @@
+node_modules
+.next
+.vercel
+.env
+.env*.local
+agent.config.json
+.agent-token.json
+dist
+build

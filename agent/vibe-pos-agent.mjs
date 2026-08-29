@@ -33,12 +33,17 @@ import os from "node:os";
 
 // ---------------------------------------------------------------- config ----
 const fileConfig = (() => {
-  const file = path.join(process.cwd(), "agent.config.json");
-  if (fs.existsSync(file)) {
-    try {
-      return JSON.parse(fs.readFileSync(file, "utf8"));
-    } catch (error) {
-      console.error("[agent] agent.config.json is not valid JSON:", error.message);
+  const candidates = [
+    path.join(process.cwd(), "agent.config.json"),
+    path.join(process.cwd(), "agent", "agent.config.json"),
+  ];
+  for (const file of candidates) {
+    if (fs.existsSync(file)) {
+      try {
+        return JSON.parse(fs.readFileSync(file, "utf8"));
+      } catch (error) {
+        console.error("[agent] agent.config.json is not valid JSON:", error.message);
+      }
     }
   }
   return {};
