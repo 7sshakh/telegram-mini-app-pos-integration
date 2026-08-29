@@ -27,7 +27,7 @@ export function hashInitData(initData: string, botToken: string): string {
     .map(([key, value]) => `${key}=${value}`)
     .join("\n");
 
-  const secret = crypto.createHash("sha256").update(botToken).digest();
+  const secret = crypto.createHmac("sha256", "WebAppData").update(botToken).digest();
   return crypto.createHmac("sha256", secret).update(dataCheckString).digest("hex");
 }
 
