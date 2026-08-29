@@ -1,0 +1,11 @@
+{
+  "CLOUD_URL": "http://localhost:3000",
+  "POS_URL": "http://127.0.0.1:8787",
+  "POS_TOKEN": "dev-local-pos-token",
+  "DEVICE_ID": "vibe-pos-xxxxxxxx",
+  "DEVICE_SECRET": "paste-secret-from-admin-api",
+  "AGENT_NAME": "VIBE-POS-1",
+  "CATALOG_INTERVAL_MS": 60000,
+  "STATUS_INTERVAL_MS": 15000,
+  "CLAIM_WAIT_SECONDS": 25
+}
