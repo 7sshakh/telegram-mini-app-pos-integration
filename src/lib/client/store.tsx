@@ -416,23 +416,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const existing = getToken();
       const hasTelegram = !!webApp?.initData;
       try {
-        if (existing) {
-          try {
-            await loadProfile();
-          } catch {
-            // handled inside loadProfile
-          }
-          dispatch({ type: "boot/ready", token: existing, devLoginAvailable: !hasTelegram });
-        } else if (hasTelegram) {
+        if (hasTelegram) {
           await login();
           await loadProfile();
           dispatch({ type: "boot/ready", token: getToken(), devLoginAvailable: false });
+        } else if (existing) {
+          try {
+            await loadProfile();
+            dispatch({ type: "boot/ready", token: existing, devLoginAvailable: true });
+          } catch {
+            setToken(null);
+            dispatch({ type: "boot/ready", token: null, devLoginAvailable: true });
+          }
         } else {
           dispatch({ type: "boot/ready", token: null, devLoginAvailable: true });
         }
       } catch (error) {
-        const message = error instanceof ApiError ? error.message : "Kirishda xatolik. Ilovani qaytadan oching.";
-        dispatch({ type: "boot/error", message });
+        console.warn("Auth initialization warning:", error);
+        dispatch({ type: "boot/ready", token: getToken(), devLoginAvailable: !hasTelegram });
       }
       if (!cancelled) await loadMenu();
     })();
