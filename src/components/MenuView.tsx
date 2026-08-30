@@ -9,7 +9,7 @@ import { useApp } from "@/lib/client/store";
 import type { PosProduct } from "@/lib/types";
 
 export function MenuView() {
-  const { state, addToCart, changeQty, removeFromCart, setTab, refreshMenu } = useApp();
+  const { state, addToCart, setQty, removeItem, setTab, refreshMenu } = useApp();
   const [category, setCategory] = useState<string>("all");
   const [query, setQuery] = useState("");
   const [activeProduct, setActiveProduct] = useState<PosProduct | null>(null);
@@ -181,11 +181,11 @@ export function MenuView() {
                   cartQty={inCartQty}
                   onOpen={() => setActiveProduct(product)}
                   onAdd={() => addToCart(product, 1, [])}
-                  onIncrease={() => cartItem && changeQty(cartItem.key, cartItem.qty + 1)}
+                  onIncrease={() => cartItem && setQty(cartItem.key, cartItem.qty + 1)}
                   onDecrease={() => {
                     if (!cartItem) return;
-                    if (cartItem.qty <= 1) removeFromCart(cartItem.key);
-                    else changeQty(cartItem.key, cartItem.qty - 1);
+                    if (cartItem.qty <= 1) removeItem(cartItem.key);
+                    else setQty(cartItem.key, cartItem.qty - 1);
                   }}
                 />
               );
