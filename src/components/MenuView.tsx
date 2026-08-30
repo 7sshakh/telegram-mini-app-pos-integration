@@ -58,7 +58,7 @@ export function MenuView() {
       <EmptyState
         emoji="🍟"
         title="Menyu hozir bo‘sh"
-        text="POS kompyuteri offline bo‘lishi mumkin. Aloqa tikolgach menyu avtomatik yangilanadi."
+        text="Menyu yuklanmoqda. Aloqa tiklangach menyu avtomatik chiqadi."
         action={
           <button onClick={() => void refreshMenu()} className="tap btn-ghost px-4 py-2 text-[13px] font-semibold">
             Qayta urinish
@@ -76,11 +76,9 @@ export function MenuView() {
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-brand">VIBE</p>
             <h1 className="text-[19px] font-extrabold leading-tight">HotDog · Burger · Drinks</h1>
           </div>
-          <div className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-2.5 py-1.5 text-[11px] text-white/70">
-            <span
-              className={`h-2 w-2 rounded-full ${state.catalog?.meta.posOnline ? "bg-mint live-dot" : "bg-flame"}`}
-            />
-            {state.catalog?.meta.posOnline ? "POS online" : "POS offline"}
+          <div className="flex items-center gap-1.5 rounded-full border border-brand/20 bg-brand/10 px-2.5 py-1.5 text-[11px] font-medium text-brand">
+            <span className="h-2 w-2 rounded-full bg-brand live-dot" />
+            Jonli menyu
           </div>
         </div>
 

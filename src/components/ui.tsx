@@ -236,18 +236,10 @@ export function Toaster() {
 
 export function ConnectionBanner() {
   const { state } = useApp();
-  if (state.online && state.catalog?.meta.posOnline !== false) {
-    return state.catalog?.meta.mockMode ? (
-      <div className="mx-4 mb-2 rounded-xl border border-brand/25 bg-brand/10 px-3 py-2 text-[11.5px] leading-snug text-brand">
-        DEMO rejim: POS mock ma’lumotlari ishlatilmoqda. Ishlab chiqarishda POS_MODE=pos qiling.
-      </div>
-    ) : null;
-  }
+  if (state.online) return null;
   return (
     <div className="mx-4 mb-2 rounded-xl border border-flame/30 bg-flame/10 px-3 py-2 text-[11.5px] leading-snug text-white">
-      {state.online
-        ? "POS kompyuteri hozir offline. Buyurtmalar navbatda saqlanadi va aloqa tikolgach yuboriladi."
-        : "Internet aloqasi yo‘q. Savatchangiz saqlanib qoladi."}
+      Internet aloqasi yo‘q. Savatchangiz saqlanib qoladi.
     </div>
   );
 }

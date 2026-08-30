@@ -233,14 +233,9 @@ function OrderTracker({ order, onChanged }: { order: OrderDTO; onChanged: (order
             </div>
           </div>
 
-          {current.posSyncStatus === "pending" ? (
-            <p className="mt-3 rounded-xl border border-brand/30 bg-brand/10 p-2.5 text-[11.5px] leading-snug text-brand">
-              {POS_SYNC_LABELS.pending} — POS kompyuteri javobini kutmoqda.
-            </p>
-          ) : null}
           {current.posSyncStatus === "failed" ? (
             <p className="mt-3 rounded-xl border border-flame/40 bg-flame/10 p-2.5 text-[11.5px] leading-snug text-white">
-              POS ga yuborishda xatolik. Operator ko‘rib chiqadi, pul yechilmagan bo‘lsa qayta buyurtma bering.
+              Buyurtmani yuborishda xatolik yuz berdi. Iltimos aloqaga chiqing.
             </p>
           ) : null}
         </div>

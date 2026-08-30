@@ -565,12 +565,6 @@ export function CartView() {
         </div>
       </div>
 
-      {state.catalog?.meta.posOnline === false ? (
-        <p className="mt-3 rounded-2xl border border-brand/30 bg-brand/10 p-3 text-[11.5px] leading-snug text-brand">
-          POS kompyuteri hozir offline. Buyurtma saqlanadi va POS ishga tushgach darhol yuboriladi — yo‘qolmaydi.
-        </p>
-      ) : null}
-
       <Button
         className="mt-4 w-full"
         loading={state.submitting}
@@ -585,7 +579,7 @@ export function CartView() {
         Buyurtmani tasdiqlash · {formatSum(quote?.total ?? 0)} so‘m
       </Button>
       <p className="mt-2 text-center text-[11px] text-muted">
-        Tasdiqlashdan keyin buyurtma POS “Buyurtmalar” sahifasida paydo bo‘ladi va oshxona cheki chiqadi.
+        Tasdiqlashdan keyin buyurtma to‘g‘ridan-to‘g‘ri oshxonaga yuboriladi va tayyorlanadi.
       </p>
     </div>
   );

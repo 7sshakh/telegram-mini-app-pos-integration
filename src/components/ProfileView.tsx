@@ -166,12 +166,6 @@ export function ProfileView() {
         <div className="mb-2 flex items-center gap-2 font-semibold text-white/80">
           <Icon name="spark" className="h-4 w-4 text-brand" /> Holat
         </div>
-        Menyu manbai: <b className="text-white/80">{state.catalog?.meta.source === "pos" ? "VIBE POS (jonli)" : "demo"}</b>
-        <br />
-        POS kompyuteri: <b className={state.catalog?.meta.posOnline ? "text-mint" : "text-flame"}>
-          {state.catalog?.meta.posOnline ? "online" : "offline"}
-        </b>
-        <br />
         Katalog yangilangan: {new Date(state.catalog?.meta.fetchedAt ?? Date.now()).toLocaleTimeString("uz-UZ")}
         <div className="mt-3 flex gap-2">
           <button
