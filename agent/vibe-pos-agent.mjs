@@ -17,33 +17,22 @@
  *                                        v
  *                              POS SQLite database  (source of truth)
  *
- * - No local port is ever exposed to the internet.
- * - Orders are queued in the cloud while this computer is offline and are
- *   delivered automatically when it comes back.
- * - Every order carries an idempotency key, so retries never duplicate orders.
- *
  * Usage:  node agent/vibe-pos-agent.mjs
  * Config: environment variables or agent/agent.config.json
  */
 
 import fs from "node:fs";
 import path from "node:path";
-import crypto from "node:crypto";
 import os from "node:os";
 
 // ---------------------------------------------------------------- config ----
 const fileConfig = (() => {
-  const candidates = [
-    path.join(process.cwd(), "agent.config.json"),
-    path.join(process.cwd(), "agent", "agent.config.json"),
-  ];
-  for (const file of candidates) {
-    if (fs.existsSync(file)) {
-      try {
-        return JSON.parse(fs.readFileSync(file, "utf8"));
-      } catch (error) {
-        console.error("[agent] agent.config.json is not valid JSON:", error.message);
-      }
+  const file = path.join(process.cwd(), "agent.config.json");
+  if (fs.existsSync(file)) {
+    try {
+      return JSON.parse(fs.readFileSync(file, "utf8"));
+    } catch (error) {
+      console.error("[agent] agent.config.json is not valid JSON:", error.message);
     }
   }
   return {};
@@ -52,7 +41,7 @@ const fileConfig = (() => {
 const env = { ...fileConfig, ...process.env };
 
 const config = {
-  cloudUrl: (env.CLOUD_URL || env.AGENT_CLOUD_URL || "http://localhost:3000").replace(/\/$/, ""),
+  cloudUrl: (env.CLOUD_URL || env.AGENT_CLOUD_URL || "https://vibe-pos-miniapp.vercel.app").replace(/\/$/, ""),
   posUrl: (env.POS_URL || env.AGENT_POS_URL || "http://127.0.0.1:8787").replace(/\/$/, ""),
   posToken: env.POS_TOKEN || env.AGENT_POS_TOKEN || "",
   deviceId: env.DEVICE_ID || env.AGENT_DEVICE_ID || "",
@@ -162,7 +151,6 @@ async function cloud(pathname, options = {}, timeoutMs = 30_000) {
     headers: { ...(options.headers || {}), authorization: `Bearer ${agentToken}` },
   }, timeoutMs);
   if (response.status === 401) {
-    // token rotated or revoked -> register again and retry once
     agentToken = null;
     await register();
     return fetchJson(`${config.cloudUrl}${pathname}`, {
@@ -223,7 +211,6 @@ async function handleJob(job) {
       return;
     }
 
-    // POS refused the order (price mismatch, out of stock, ...) -> do not retry blindly
     const message = response.data?.message || response.data?.error || `HTTP ${response.status}`;
     const fatal = response.status === 422 || response.status === 400;
     await reportJob(job.id, { ok: false, error: String(message).slice(0, 400), fatal });

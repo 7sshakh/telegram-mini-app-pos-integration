@@ -1,16 +1,16 @@
 @import "tailwindcss";
 
 @theme {
-  --color-ink: #0c0d0e;
-  --color-ink-soft: #141518;
-  --color-ink-card: #18191d;
-  --color-ink-line: #26272e;
+  --color-ink: #0a0a0b;
+  --color-ink-soft: #111113;
+  --color-ink-card: #161618;
+  --color-ink-line: #222226;
   --color-brand: #f59e0b;
   --color-brand-deep: #d97706;
   --color-flame: #ef4444;
   --color-mint: #10b981;
-  --color-muted: #9ca3af;
-  --radius-xl2: 1.25rem;
+  --color-muted: #71717a;
+  --radius-xl2: 1rem;
 }
 
 :root {
@@ -24,169 +24,113 @@
   box-sizing: border-box;
 }
 
-html,
-body {
-  background-color: #0c0d0e;
-  color: #f3f4f6;
+html, body {
+  background: #0a0a0b;
+  color: #e4e4e7;
   overscroll-behavior-y: none;
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
-/* Hide scrollbars for app-like experience */
-.no-scrollbar {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
+.no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
 
 .app-shell {
   min-height: 100dvh;
-  padding-bottom: calc(84px + var(--safe-bottom));
-  background-color: #0c0d0e;
+  padding-bottom: calc(78px + var(--safe-bottom));
+  background: #0a0a0b;
 }
 
-/* Minimalist Card */
 .card {
-  background-color: #141518;
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 1rem;
-}
-
-.card-solid {
-  background-color: #18191d;
-  border: 1px solid #26272e;
-  border-radius: 1rem;
-}
-
-/* Tap state feedback */
-.tap {
-  transition: transform 0.1s ease, opacity 0.1s ease;
-}
-.tap:active {
-  transform: scale(0.98);
-  opacity: 0.88;
-}
-
-/* Clean Minimal Buttons */
-.btn-primary {
-  background-color: #f59e0b;
-  color: #000000;
-  font-weight: 700;
+  background: #131315;
+  border: 1px solid rgba(255,255,255,0.06);
   border-radius: 0.875rem;
-  transition: opacity 0.15s ease;
 }
-.btn-primary:active {
-  opacity: 0.9;
+
+.tap { transition: transform 80ms ease, opacity 80ms ease; }
+.tap:active { transform: scale(0.97); opacity: 0.85; }
+
+.btn-primary {
+  background: #f59e0b;
+  color: #000;
+  font-weight: 700;
+  border-radius: 0.75rem;
 }
-.btn-primary:disabled {
-  opacity: 0.4;
-}
+.btn-primary:disabled { opacity: 0.4; }
 
 .btn-ghost {
-  background-color: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 0.875rem;
-  color: #e5e7eb;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 0.75rem;
+  color: #d4d4d8;
 }
 
-/* Clean Minimal Chips */
 .chip {
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background-color: #141518;
-  color: #9ca3af;
-  border-radius: 0.75rem;
+  border: 1px solid rgba(255,255,255,0.06);
+  background: #131315;
+  color: #a1a1aa;
+  border-radius: 0.625rem;
   font-weight: 600;
-  transition: all 0.15s ease;
 }
 .chip-active {
-  background-color: #f59e0b;
+  background: #f59e0b;
   border-color: #f59e0b;
-  color: #000000;
+  color: #000;
 }
 
 .sheet-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.75);
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.8);
   backdrop-filter: blur(4px);
-  animation: fade-in 0.15s ease-out;
+  animation: fade-in 0.12s ease-out;
   z-index: 60;
 }
-
 .sheet {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 61;
-  max-height: 90dvh;
-  overflow: hidden;
-  background: #141518;
-  border-top-left-radius: 1.25rem;
-  border-top-right-radius: 1.25rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 61;
+  max-height: 90dvh; overflow: hidden;
+  background: #131315;
+  border-top-left-radius: 1.25rem; border-top-right-radius: 1.25rem;
+  border-top: 1px solid rgba(255,255,255,0.08);
   padding-bottom: var(--safe-bottom);
-  animation: slide-up 0.2s cubic-bezier(0.2, 1, 0.3, 1);
-  display: flex;
-  flex-direction: column;
+  animation: slide-up 0.2s cubic-bezier(0.2,1,0.3,1);
+  display: flex; flex-direction: column;
 }
+.sheet-body { overflow-y: auto; -webkit-overflow-scrolling: touch; }
 
-.sheet-body {
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-}
+@keyframes slide-up { from { transform: translateY(100%); } }
+@keyframes fade-in { from { opacity: 0; } }
 
-@keyframes slide-up {
-  from {
-    transform: translateY(100%);
-  }
-  to {
-    transform: translateY(0);
-  }
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
 }
-
-@keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
+.card-animate { animation: card-in 0.3s ease-out both; }
 
 .skeleton {
-  position: relative;
-  overflow: hidden;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 0.75rem;
+  position: relative; overflow: hidden;
+  background: rgba(255,255,255,0.04);
+  border-radius: 0.625rem;
 }
 
-/* Clean minimal form controls */
-input,
-textarea,
-select {
-  background: #18191d;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 0.75rem;
-  padding: 0.75rem 0.9rem;
+input, textarea, select {
+  background: #161618;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 0.625rem;
+  padding: 0.65rem 0.8rem;
   width: 100%;
-  color: #ffffff;
-  font-size: 14.5px;
+  color: #fff;
+  font-size: 14px;
   outline: none;
-  transition: border-color 0.15s ease;
+  transition: border-color 0.12s ease;
 }
-input:focus,
-textarea:focus,
-select:focus {
+input:focus, textarea:focus, select:focus {
   border-color: #f59e0b;
 }
-input::placeholder,
-textarea::placeholder {
-  color: #6b7280;
+input::placeholder, textarea::placeholder {
+  color: #52525b;
 }
+
+.rise { animation: card-in 0.25s ease-out both; }

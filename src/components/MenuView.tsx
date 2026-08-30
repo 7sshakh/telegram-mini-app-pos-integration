@@ -3,16 +3,22 @@
 
 import { useMemo, useState } from "react";
 
-import { EmptyState, Icon, Money, QtyStepper, SectionTitle, Sheet, Skeleton, useDebounced } from "@/components/ui";
-import { haptic } from "@/lib/client/telegram";
+import { EmptyState, Icon, Money, QtyStepper, Sheet, Skeleton, useDebounced } from "@/components/ui";
+import { haptic, vibrate } from "@/lib/client/telegram";
 import { useApp } from "@/lib/client/store";
 import type { PosProduct } from "@/lib/types";
+
+const BANNERS = [
+  { text: "🔥 Bepul yetkazib berish — Chirchiq bo'ylab!", bg: "from-amber-600/20 to-amber-900/10", border: "border-amber-500/20" },
+  { text: "🍔 Eng mazali hotdog va burgerlar — faqat VIBE da!", bg: "from-orange-600/15 to-red-900/10", border: "border-orange-500/15" },
+];
 
 export function MenuView() {
   const { state, addToCart, setQty, removeItem, setTab, refreshMenu } = useApp();
   const [category, setCategory] = useState<string>("all");
   const [query, setQuery] = useState("");
   const [activeProduct, setActiveProduct] = useState<PosProduct | null>(null);
+  const [bannerIdx, setBannerIdx] = useState(0);
   const debouncedQuery = useDebounced(query, 180);
 
   const categories = state.catalog?.categories ?? [];
@@ -20,129 +26,99 @@ export function MenuView() {
 
   const filtered = useMemo(() => {
     const q = debouncedQuery.trim().toLowerCase();
-    return products.filter((product) => {
-      if (!product.isAvailable) return false;
-      if (category !== "all" && product.categoryId !== category) return false;
+    return products.filter((p) => {
+      if (!p.isAvailable) return false;
+      if (category !== "all" && p.categoryId !== category) return false;
       if (!q) return true;
-      return (
-        product.name.toLowerCase().includes(q) ||
-        (product.description ?? "").toLowerCase().includes(q)
-      );
+      return p.name.toLowerCase().includes(q) || (p.description ?? "").toLowerCase().includes(q);
     });
   }, [category, debouncedQuery, products]);
 
   if (state.catalogLoading) {
     return (
-      <div className="px-4 pt-3 space-y-3">
-        <Skeleton className="h-10 w-full rounded-xl" />
-        <div className="flex gap-2 overflow-x-hidden">
-          {[0, 1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-8 w-24 shrink-0 rounded-lg" />
-          ))}
+      <div className="px-3 pt-3 space-y-2.5">
+        <Skeleton className="h-9 w-full" />
+        <div className="grid grid-cols-2 gap-2">
+          {[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-48 w-full" />)}
         </div>
-        {[0, 1, 2, 3].map((i) => (
-          <Skeleton key={i} className="h-24 w-full rounded-xl" />
-        ))}
       </div>
     );
   }
 
   if (products.length === 0) {
     return (
-      <div className="px-4 py-12">
-        <EmptyState
-          emoji="🍽️"
-          title="Menyu yuklanmoqda"
-          text="Iltimos bir necha soniya kuting..."
-          action={
-            <button onClick={() => void refreshMenu()} className="tap btn-ghost px-4 py-2 text-xs font-semibold">
-              Qayta yuklash
-            </button>
-          }
+      <div className="px-4 py-10">
+        <EmptyState emoji="🍽️" title="Menyu yuklanmoqda" text="Bir necha soniya kuting..."
+          action={<button onClick={() => void refreshMenu()} className="tap btn-ghost px-4 py-2 text-xs font-semibold">Qayta yuklash</button>}
         />
       </div>
     );
   }
 
   return (
-    <div className="pb-24">
-      {/* Minimal Header & Search */}
-      <div className="sticky top-0 z-20 bg-[#0c0d0e]/95 px-4 pb-2.5 pt-3 backdrop-blur-lg border-b border-white/5">
-        <div className="mb-2.5 flex items-center justify-between">
-          <div>
-            <h1 className="text-[17px] font-bold tracking-tight text-white">VIBE</h1>
-            <p className="text-[11px] text-zinc-400">HotDog · Burger · Drinks</p>
-          </div>
-          <div className="flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-[11px] font-medium text-emerald-400 border border-emerald-500/20">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-            Ochiq
-          </div>
+    <div className="pb-20">
+      {/* Header */}
+      <div className="sticky top-0 z-20 bg-[#0a0a0b]/95 backdrop-blur-md px-3 pb-2 pt-3 border-b border-white/4">
+        <div className="mb-2 flex items-center justify-between">
+          <h1 className="text-[16px] font-bold text-white tracking-tight">VIBE</h1>
+          <span className="text-[10px] font-medium text-zinc-500">HotDog · Burger · Drinks</span>
         </div>
 
-        {/* Minimal Search Input */}
-        <div className="relative">
-          <Icon name="search" className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
+        {/* Search */}
+        <div className="relative mb-2">
+          <Icon name="search" className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-zinc-500" />
           <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            value={query} onChange={(e) => setQuery(e.target.value)}
             placeholder="Qidirish..."
-            className="w-full rounded-xl border border-white/8 bg-[#16171a] py-2 pl-9 pr-8 text-[13.5px] text-white placeholder-zinc-500 focus:border-amber-500 focus:outline-none"
+            className="w-full rounded-lg border-0 bg-[#161618] py-1.5 pl-8 pr-7 text-[12.5px] text-white placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-amber-500/50"
           />
-          {query && (
-            <button onClick={() => setQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-zinc-500">
-              ✕
-            </button>
-          )}
+          {query && <button onClick={() => setQuery("")} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-zinc-500">✕</button>}
         </div>
 
-        {/* Minimal Category Chips */}
-        <div className="no-scrollbar -mx-4 mt-2.5 flex gap-1.5 overflow-x-auto px-4 pb-0.5">
-          <button
-            onClick={() => setCategory("all")}
-            className={`tap shrink-0 rounded-lg px-3 py-1.5 text-[12px] font-semibold transition-colors ${
-              category === "all"
-                ? "bg-amber-500 text-black font-bold"
-                : "bg-[#16171a] text-zinc-400 border border-white/5 hover:text-white"
-            }`}
-          >
+        {/* Categories */}
+        <div className="no-scrollbar -mx-3 flex gap-1 overflow-x-auto px-3">
+          <button onClick={() => setCategory("all")}
+            className={`tap shrink-0 rounded-lg px-2.5 py-1 text-[11px] font-semibold ${category === "all" ? "bg-amber-500 text-black" : "bg-[#161618] text-zinc-400"}`}>
             Barchasi
           </button>
-          {categories.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => {
-                haptic("light");
-                setCategory(item.id);
-              }}
-              className={`tap shrink-0 rounded-lg px-3 py-1.5 text-[12px] font-semibold transition-colors ${
-                category === item.id
-                  ? "bg-amber-500 text-black font-bold"
-                  : "bg-[#16171a] text-zinc-400 border border-white/5 hover:text-white"
-              }`}
-            >
-              {item.name}
+          {categories.map((c) => (
+            <button key={c.id} onClick={() => { haptic("light"); setCategory(c.id); }}
+              className={`tap shrink-0 rounded-lg px-2.5 py-1 text-[11px] font-semibold ${category === c.id ? "bg-amber-500 text-black" : "bg-[#161618] text-zinc-400"}`}>
+              {c.name}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Food List */}
-      <div className="mt-3 px-4">
+      {/* Banner */}
+      <div className="px-3 mt-2.5 mb-1">
+        <button
+          onClick={() => setBannerIdx((i) => (i + 1) % BANNERS.length)}
+          className={`tap w-full rounded-xl border ${BANNERS[bannerIdx].border} bg-gradient-to-r ${BANNERS[bannerIdx].bg} px-3.5 py-2.5 text-left`}
+        >
+          <p className="text-[12.5px] font-bold text-white leading-snug">{BANNERS[bannerIdx].text}</p>
+          <p className="mt-0.5 text-[10px] text-zinc-400">Hoziroq buyurtma bering ➔</p>
+        </button>
+      </div>
+
+      {/* 2-Column Grid */}
+      <div className="px-3 mt-2">
         {filtered.length === 0 ? (
-          <EmptyState emoji="🔍" title="Topilmadi" text="Boshqa so‘z bilan qidirib ko‘ring." />
+          <EmptyState emoji="🔍" title="Topilmadi" text="Boshqa so'z bilan qidiring." />
         ) : (
-          <div className="space-y-2">
-            {filtered.map((product) => {
+          <div className="grid grid-cols-2 gap-2">
+            {filtered.map((product, idx) => {
               const cartItem = state.cart.find((c) => c.productId === product.id && c.modifiers.length === 0);
               const inCartQty = cartItem ? cartItem.qty : 0;
               return (
-                <ProductRow
+                <GridCard
                   key={product.id}
                   product={product}
                   cartQty={inCartQty}
+                  delay={idx * 30}
                   onOpen={() => setActiveProduct(product)}
-                  onAdd={() => addToCart(product, 1, [])}
-                  onIncrease={() => cartItem && setQty(cartItem.key, cartItem.qty + 1)}
+                  onAdd={() => { addToCart(product, 1, []); vibrate(10); }}
+                  onIncrease={() => { if (cartItem) { setQty(cartItem.key, cartItem.qty + 1); vibrate(8); } }}
                   onDecrease={() => {
                     if (!cartItem) return;
                     if (cartItem.qty <= 1) removeItem(cartItem.key);
@@ -155,43 +131,23 @@ export function MenuView() {
         )}
       </div>
 
-      {/* Product Details Sheet */}
-      <ProductSheet
-        product={activeProduct}
-        onClose={() => setActiveProduct(null)}
-        onAdded={() => {
-          setActiveProduct(null);
-          setTab("cart");
-        }}
-      />
+      <ProductSheet product={activeProduct} onClose={() => setActiveProduct(null)}
+        onAdded={() => { setActiveProduct(null); setTab("cart"); }} />
     </div>
   );
 }
 
-function ProductRow({
-  product,
-  cartQty,
-  onOpen,
-  onAdd,
-  onIncrease,
-  onDecrease,
-}: {
-  product: PosProduct;
-  cartQty: number;
-  onOpen: () => void;
-  onAdd: () => void;
-  onIncrease: () => void;
-  onDecrease: () => void;
+function GridCard({ product, cartQty, delay, onOpen, onAdd, onIncrease, onDecrease }: {
+  product: PosProduct; cartQty: number; delay: number;
+  onOpen: () => void; onAdd: () => void; onIncrease: () => void; onDecrease: () => void;
 }) {
   const hasModifiers = product.modifiers.length > 0;
 
   return (
-    <div className="flex items-center gap-3 rounded-2xl border border-white/5 bg-[#141518] p-2.5 transition-colors">
-      {/* Product Thumbnail */}
-      <button
-        onClick={onOpen}
-        className="tap relative h-18 w-18 shrink-0 overflow-hidden rounded-xl bg-[#1c1d22]"
-      >
+    <div className="card-animate overflow-hidden rounded-xl border border-white/4 bg-[#131315]"
+      style={{ animationDelay: `${Math.min(delay, 300)}ms` }}>
+      {/* Image */}
+      <button onClick={onOpen} className="tap relative block w-full aspect-[4/3] overflow-hidden bg-[#1a1a1d]">
         {product.imageUrl ? (
           <img src={product.imageUrl} alt={product.name} className="h-full w-full object-cover" loading="lazy" />
         ) : (
@@ -199,48 +155,32 @@ function ProductRow({
         )}
       </button>
 
-      {/* Product Info */}
-      <div className="flex min-w-0 flex-1 flex-col justify-between self-stretch py-0.5">
-        <button onClick={onOpen} className="text-left">
-          <p className="line-clamp-1 text-[14px] font-semibold text-white">{product.name}</p>
+      {/* Info */}
+      <div className="p-2">
+        <button onClick={onOpen} className="text-left w-full">
+          <p className="text-[12.5px] font-semibold text-white leading-tight line-clamp-1">{product.name}</p>
           {product.description && (
-            <p className="mt-0.5 line-clamp-1 text-[11.5px] text-zinc-400 leading-snug">{product.description}</p>
+            <p className="mt-0.5 text-[10px] text-zinc-500 leading-snug line-clamp-2">{product.description}</p>
           )}
         </button>
 
-        <div className="mt-1 flex items-center justify-between">
-          <Money value={product.price} className="text-[14px] font-bold text-amber-400" />
+        <div className="mt-1.5 flex items-center justify-between">
+          <Money value={product.price} className="text-[12.5px] font-bold text-amber-400" />
 
-          {/* Action Button */}
           {hasModifiers ? (
-            <button
-              onClick={onOpen}
-              className="tap rounded-lg bg-[#22232a] px-3 py-1 text-[11.5px] font-semibold text-zinc-200 border border-white/5"
-            >
+            <button onClick={onOpen}
+              className="tap rounded-md bg-[#1e1e22] px-2 py-0.5 text-[10px] font-semibold text-zinc-300 border border-white/5">
               Tanlash
             </button>
           ) : cartQty > 0 ? (
-            <div className="flex items-center gap-2 rounded-lg bg-[#1c1d22] p-0.5 border border-white/8">
-              <button
-                onClick={onDecrease}
-                className="tap flex h-6 w-6 items-center justify-center rounded-md bg-amber-500 text-black font-bold text-xs"
-              >
-                −
-              </button>
-              <span className="text-xs font-bold text-white px-1">{cartQty}</span>
-              <button
-                onClick={onIncrease}
-                className="tap flex h-6 w-6 items-center justify-center rounded-md bg-amber-500 text-black font-bold text-xs"
-              >
-                +
-              </button>
+            <div className="flex items-center gap-1 rounded-md bg-[#1a1a1d] px-0.5 py-0.5 border border-white/5">
+              <button onClick={onDecrease} className="tap flex h-5 w-5 items-center justify-center rounded bg-zinc-700 text-[10px] font-bold text-white">−</button>
+              <span className="text-[10px] font-bold text-white px-0.5 min-w-[14px] text-center">{cartQty}</span>
+              <button onClick={onIncrease} className="tap flex h-5 w-5 items-center justify-center rounded bg-amber-500 text-[10px] font-bold text-black">+</button>
             </div>
           ) : (
-            <button
-              onClick={onAdd}
-              className="tap flex h-7 w-7 items-center justify-center rounded-lg bg-amber-500 text-black font-bold text-sm shadow-sm"
-              aria-label="Qo‘shish"
-            >
+            <button onClick={onAdd}
+              className="tap flex h-6 w-6 items-center justify-center rounded-md bg-amber-500 text-black font-bold text-sm">
               +
             </button>
           )}
@@ -250,121 +190,79 @@ function ProductRow({
   );
 }
 
-function ProductSheet({
-  product,
-  onClose,
-  onAdded,
-}: {
-  product: PosProduct | null;
-  onClose: () => void;
-  onAdded: () => void;
+function ProductSheet({ product, onClose, onAdded }: {
+  product: PosProduct | null; onClose: () => void; onAdded: () => void;
 }) {
   const { addToCart } = useApp();
   const [qty, setQty] = useState(1);
   const [selected, setSelected] = useState<Record<string, number>>({});
   const [note, setNote] = useState("");
 
-  const activeProduct = product;
   const groups = useMemo(() => {
-    if (!activeProduct) return [] as { name: string; modifiers: PosProduct["modifiers"] }[];
+    if (!product) return [] as { name: string; modifiers: PosProduct["modifiers"] }[];
     const map = new Map<string, PosProduct["modifiers"]>();
-    for (const modifier of activeProduct.modifiers) {
-      const key = modifier.groupName ?? "Qo‘shimchalar";
-      map.set(key, [...(map.get(key) ?? []), modifier]);
+    for (const m of product.modifiers) {
+      const key = m.groupName ?? "Qo'shimchalar";
+      map.set(key, [...(map.get(key) ?? []), m]);
     }
     return [...map.entries()].map(([name, modifiers]) => ({ name, modifiers }));
-  }, [activeProduct]);
+  }, [product]);
 
-  if (!activeProduct) return null;
+  if (!product) return null;
 
-  const unitPrice =
-    activeProduct.price +
-    Object.entries(selected).reduce((sum, [id, count]) => {
-      const modifier = activeProduct.modifiers.find((item) => item.id === id);
-      return sum + (modifier ? modifier.price * count : 0);
-    }, 0);
-
+  const unitPrice = product.price + Object.entries(selected).reduce((sum, [id, count]) => {
+    const m = product.modifiers.find((item) => item.id === id);
+    return sum + (m ? m.price * count : 0);
+  }, 0);
   const total = unitPrice * qty;
-  const maxQty = activeProduct.stock !== null ? activeProduct.stock : 50;
 
   return (
-    <Sheet
-      open={!!activeProduct}
-      onClose={onClose}
-      title={activeProduct.name}
-      subtitle={activeProduct.description}
+    <Sheet open={!!product} onClose={onClose} title={product.name} subtitle={product.description}
       footer={
         <div className="flex items-center gap-3">
-          <QtyStepper value={qty} min={1} max={Math.max(1, maxQty)} onChange={(next) => setQty(Math.max(1, next))} />
-          <button
-            onClick={() => {
-              addToCart(
-                activeProduct,
-                qty,
-                Object.entries(selected)
-                  .filter(([, count]) => count > 0)
-                  .map(([id, count]) => ({ id, qty: count })),
-                note.trim() || undefined,
-              );
-              onAdded();
-            }}
-            className="tap btn-primary flex-1 py-3 text-[14px] font-bold"
-          >
-            Qo‘shish · {total.toLocaleString("ru-RU")} so‘m
+          <QtyStepper value={qty} min={1} max={50} onChange={(n) => setQty(Math.max(1, n))} />
+          <button onClick={() => {
+            addToCart(product, qty,
+              Object.entries(selected).filter(([, c]) => c > 0).map(([id, c]) => ({ id, qty: c })),
+              note.trim() || undefined);
+            vibrate(12);
+            onAdded();
+          }} className="tap btn-primary flex-1 py-2.5 text-[13px] font-bold">
+            Qo'shish · {total.toLocaleString("ru-RU")} so'm
           </button>
         </div>
       }
     >
-      <div className="mb-4 h-[160px] overflow-hidden rounded-xl bg-[#1c1d22]">
-        {activeProduct.imageUrl ? (
-          <img src={activeProduct.imageUrl} alt={activeProduct.name} className="h-full w-full object-cover" />
+      <div className="mb-3 h-[140px] overflow-hidden rounded-lg bg-[#1a1a1d]">
+        {product.imageUrl ? (
+          <img src={product.imageUrl} alt={product.name} className="h-full w-full object-cover" />
         ) : (
-          <div className="flex h-full items-center justify-center text-5xl">🌭</div>
+          <div className="flex h-full items-center justify-center text-4xl">🌭</div>
         )}
       </div>
 
-      <div className="mb-3 flex items-center justify-between">
-        <Money value={activeProduct.price} className="text-[17px] font-bold text-amber-400" />
-      </div>
+      <Money value={product.price} className="text-[15px] font-bold text-amber-400 mb-3 block" />
 
       {groups.map((group) => (
-        <div key={group.name} className="mb-3">
-          <p className="mb-1.5 text-[12px] font-bold text-zinc-400 uppercase tracking-wider">{group.name}</p>
-          <div className="space-y-1.5">
-            {group.modifiers.map((modifier) => {
-              const count = selected[modifier.id] ?? 0;
+        <div key={group.name} className="mb-2.5">
+          <p className="mb-1 text-[10.5px] font-bold text-zinc-500 uppercase tracking-wider">{group.name}</p>
+          <div className="space-y-1">
+            {group.modifiers.map((m) => {
+              const count = selected[m.id] ?? 0;
               return (
-                <div key={modifier.id} className="flex items-center justify-between rounded-xl border border-white/5 bg-[#18191d] px-3 py-2">
-                  <div className="min-w-0 pr-2">
-                    <p className="truncate text-[13px] font-medium text-white">{modifier.name}</p>
-                    <p className="text-[11px] text-zinc-400">
-                      {modifier.price > 0 ? `+${modifier.price.toLocaleString("ru-RU")} so‘m` : "Bepul"}
-                    </p>
+                <div key={m.id} className="flex items-center justify-between rounded-lg border border-white/5 bg-[#161618] px-2.5 py-1.5">
+                  <div>
+                    <p className="text-[12px] font-medium text-white">{m.name}</p>
+                    <p className="text-[10px] text-zinc-500">{m.price > 0 ? `+${m.price.toLocaleString("ru-RU")} so'm` : "Bepul"}</p>
                   </div>
                   {count === 0 ? (
-                    <button
-                      onClick={() => {
-                        haptic("light");
-                        setSelected((prev) => ({ ...prev, [modifier.id]: 1 }));
-                      }}
-                      className="tap rounded-lg bg-[#22232a] px-2.5 py-1 text-[11.5px] font-semibold text-zinc-300 border border-white/5"
-                    >
-                      + Qo‘shish
+                    <button onClick={() => { haptic("light"); setSelected((p) => ({ ...p, [m.id]: 1 })); }}
+                      className="tap rounded px-2 py-0.5 text-[10px] font-semibold text-zinc-400 bg-[#1e1e22] border border-white/5">
+                      + Qo'shish
                     </button>
                   ) : (
-                    <QtyStepper
-                      size="sm"
-                      value={count}
-                      max={modifier.maxQty ?? 5}
-                      onChange={(next) =>
-                        setSelected((prev) => {
-                          const copy = { ...prev };
-                          if (next <= 0) delete copy[modifier.id];
-                          else copy[modifier.id] = next;
-                          return copy;
-                        })
-                      }
-                    />
+                    <QtyStepper size="sm" value={count} max={m.maxQty ?? 5}
+                      onChange={(n) => setSelected((p) => { const c = { ...p }; if (n <= 0) delete c[m.id]; else c[m.id] = n; return c; })} />
                   )}
                 </div>
               );
@@ -373,16 +271,11 @@ function ProductSheet({
         </div>
       ))}
 
-      <div className="mb-2">
-        <p className="mb-1 text-[12px] font-bold text-zinc-400 uppercase tracking-wider">Izoh</p>
-        <textarea
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
-          rows={2}
-          maxLength={200}
+      <div className="mb-1">
+        <p className="mb-1 text-[10.5px] font-bold text-zinc-500 uppercase tracking-wider">Izoh</p>
+        <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={2} maxLength={200}
           placeholder="Oshxona uchun maxsus istak..."
-          className="w-full rounded-xl border border-white/8 bg-[#18191d] p-2.5 text-[13px] text-white placeholder-zinc-500 focus:border-amber-500 focus:outline-none"
-        />
+          className="w-full rounded-lg border border-white/5 bg-[#161618] p-2 text-[12px] text-white placeholder-zinc-500 focus:border-amber-500 focus:outline-none" />
       </div>
     </Sheet>
   );

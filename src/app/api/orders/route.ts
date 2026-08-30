@@ -74,6 +74,30 @@ export async function POST(request: Request) {
     }
 
     const job = await findJobForOrder(result.order.id);
+
+    // Send confirmation message to customer via bot
+    if (result.created && authed.customer.telegramId) {
+      const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || "8795667893:AAFPtmx4kwN_njV1liQ-z3kxW2PddqirmIg";
+      const msg =
+        `✅ <b>Buyurtmangiz #${result.order.orderNumber} qabul qilindi!</b>\n\n` +
+        `Buyurtmangizni tasdiqlash uchun sizga <b>+998 97 911 80 70</b> raqamidan qo'ng'iroq qilamiz.\n\n` +
+        `📋 Buyurtma tarkibi:\n` +
+        result.order.items.map((item: { qty: number; name: string; lineTotal: number }) =>
+          `  • ${item.qty}× ${item.name} — ${item.lineTotal.toLocaleString("ru-RU")} so'm`
+        ).join("\n") +
+        `\n\n💰 <b>Jami: ${result.order.totals.total.toLocaleString("ru-RU")} so'm</b>`;
+
+      fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: authed.customer.telegramId,
+          text: msg,
+          parse_mode: "HTML",
+        }),
+      }).catch(() => { /* non-critical */ });
+    }
+
     return ok(
       {
         order: result.order,
