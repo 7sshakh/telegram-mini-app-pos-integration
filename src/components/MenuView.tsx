@@ -31,23 +31,17 @@ export function MenuView() {
     });
   }, [category, debouncedQuery, products]);
 
-  const popular = useMemo(
-    () => products.filter((product) => product.isAvailable && (product.tags?.includes("popular") ?? false)).slice(0, 6),
-    [products],
-  );
-
   if (state.catalogLoading) {
     return (
-      <div className="px-4 pt-3">
-        <Skeleton className="mb-4 h-12 w-full rounded-2xl" />
-        <Skeleton className="mb-4 h-10 w-full rounded-xl" />
-        <div className="mb-4 flex gap-2 overflow-x-hidden">
-          {[0, 1, 2, 3].map((index) => (
-            <Skeleton key={index} className="h-9 w-28 shrink-0 rounded-full" />
+      <div className="px-4 pt-3 space-y-3">
+        <Skeleton className="h-10 w-full rounded-xl" />
+        <div className="flex gap-2 overflow-x-hidden">
+          {[0, 1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-8 w-24 shrink-0 rounded-lg" />
           ))}
         </div>
-        {[0, 1, 2, 3].map((index) => (
-          <Skeleton key={index} className="mb-3 h-28 w-full rounded-2xl" />
+        {[0, 1, 2, 3].map((i) => (
+          <Skeleton key={i} className="h-24 w-full rounded-xl" />
         ))}
       </div>
     );
@@ -55,122 +49,89 @@ export function MenuView() {
 
   if (products.length === 0) {
     return (
-      <EmptyState
-        emoji="🍟"
-        title="Menyu yuklanmoqda"
-        text="Aloqa o‘rnatilmoqda, iltimos bir necha soniya kuting..."
-        action={
-          <button onClick={() => void refreshMenu()} className="tap btn-primary px-5 py-2.5 text-[13px] font-bold">
-            Qayta yuklash
-          </button>
-        }
-      />
+      <div className="px-4 py-12">
+        <EmptyState
+          emoji="🍽️"
+          title="Menyu yuklanmoqda"
+          text="Iltimos bir necha soniya kuting..."
+          action={
+            <button onClick={() => void refreshMenu()} className="tap btn-ghost px-4 py-2 text-xs font-semibold">
+              Qayta yuklash
+            </button>
+          }
+        />
+      </div>
     );
   }
 
   return (
     <div className="pb-24">
-      {/* Top Header with Telegram safe-area */}
-      <div className="sticky top-0 z-20 bg-ink/95 px-4 pb-3 pt-3 backdrop-blur-md">
-        <div className="mb-3 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand to-amber-500 text-base font-black text-black shadow-lg shadow-brand/20">
-              V
-            </div>
-            <div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-[15px] font-black tracking-tight text-white">VIBE</span>
-                <span className="rounded-full bg-brand/15 px-2 py-0.5 text-[10px] font-extrabold text-brand">FOODS</span>
-              </div>
-              <p className="text-[11px] font-medium text-white/50">HotDog · Burger · Drinks</p>
-            </div>
+      {/* Minimal Header & Search */}
+      <div className="sticky top-0 z-20 bg-[#0c0d0e]/95 px-4 pb-2.5 pt-3 backdrop-blur-lg border-b border-white/5">
+        <div className="mb-2.5 flex items-center justify-between">
+          <div>
+            <h1 className="text-[17px] font-bold tracking-tight text-white">VIBE</h1>
+            <p className="text-[11px] text-zinc-400">HotDog · Burger · Drinks</p>
           </div>
-          <div className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] font-semibold text-white/80">
-            <span className="h-2 w-2 rounded-full bg-mint live-dot" />
+          <div className="flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-[11px] font-medium text-emerald-400 border border-emerald-500/20">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
             Ochiq
           </div>
         </div>
 
-        {/* Search Bar */}
+        {/* Minimal Search Input */}
         <div className="relative">
-          <Icon name="search" className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
+          <Icon name="search" className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
           <input
             value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Taom yoki ichimlik izlash..."
-            className="w-full rounded-2xl border border-white/10 bg-white/5 py-2.5 pl-10 pr-4 text-[13.5px] text-white placeholder-white/40 focus:border-brand focus:outline-none"
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Qidirish..."
+            className="w-full rounded-xl border border-white/8 bg-[#16171a] py-2 pl-9 pr-8 text-[13.5px] text-white placeholder-zinc-500 focus:border-amber-500 focus:outline-none"
           />
-          {query ? (
-            <button
-              onClick={() => setQuery("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-white/40"
-            >
+          {query && (
+            <button onClick={() => setQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-zinc-500">
               ✕
             </button>
-          ) : null}
+          )}
         </div>
 
-        {/* Categories Bar */}
-        <div className="no-scrollbar -mx-4 mt-3 flex gap-2 overflow-x-auto px-4 pb-1">
-          <CategoryChip
-            active={category === "all"}
+        {/* Minimal Category Chips */}
+        <div className="no-scrollbar -mx-4 mt-2.5 flex gap-1.5 overflow-x-auto px-4 pb-0.5">
+          <button
             onClick={() => setCategory("all")}
-            label="Barchasi"
-            emoji="✨"
-          />
+            className={`tap shrink-0 rounded-lg px-3 py-1.5 text-[12px] font-semibold transition-colors ${
+              category === "all"
+                ? "bg-amber-500 text-black font-bold"
+                : "bg-[#16171a] text-zinc-400 border border-white/5 hover:text-white"
+            }`}
+          >
+            Barchasi
+          </button>
           {categories.map((item) => (
-            <CategoryChip
+            <button
               key={item.id}
-              active={category === item.id}
               onClick={() => {
                 haptic("light");
                 setCategory(item.id);
               }}
-              label={item.name}
-              emoji={item.emoji}
-            />
+              className={`tap shrink-0 rounded-lg px-3 py-1.5 text-[12px] font-semibold transition-colors ${
+                category === item.id
+                  ? "bg-amber-500 text-black font-bold"
+                  : "bg-[#16171a] text-zinc-400 border border-white/5 hover:text-white"
+              }`}
+            >
+              {item.name}
+            </button>
           ))}
         </div>
       </div>
 
-      {/* Popular Selection */}
-      {!debouncedQuery && category === "all" && popular.length > 0 ? (
-        <section className="mb-5 mt-2 px-4">
-          <SectionTitle>Ommabop tanlovlar</SectionTitle>
-          <div className="no-scrollbar -mx-4 flex gap-3 overflow-x-auto px-4 pb-1">
-            {popular.map((product) => (
-              <button
-                key={product.id}
-                onClick={() => setActiveProduct(product)}
-                className="tap card w-[156px] shrink-0 overflow-hidden text-left border border-white/8 bg-ink-soft/60"
-              >
-                <div className="h-[108px] w-full overflow-hidden bg-white/4">
-                  {product.imageUrl ? (
-                    <img src={product.imageUrl} alt={product.name} className="h-full w-full object-cover" loading="lazy" />
-                  ) : (
-                    <div className="flex h-full items-center justify-center text-4xl">🌭</div>
-                  )}
-                </div>
-                <div className="p-2.5">
-                  <p className="line-clamp-1 text-[13px] font-bold">{product.name}</p>
-                  <Money value={product.price} className="mt-1 block text-[13px] font-extrabold text-brand" />
-                </div>
-              </button>
-            ))}
-          </div>
-        </section>
-      ) : null}
-
-      {/* Main Menu List */}
-      <section className="mt-2 px-4">
-        <SectionTitle right={<span className="text-[11.5px] font-medium text-white/50">{filtered.length} ta taom</span>}>
-          {category === "all" ? "Menyu" : categories.find((item) => item.id === category)?.name ?? "Menyu"}
-        </SectionTitle>
-
+      {/* Food List */}
+      <div className="mt-3 px-4">
         {filtered.length === 0 ? (
-          <EmptyState emoji="🔍" title="Hech narsa topilmadi" text="Boshqa so‘z bilan qidirib ko‘ring yoki kategoriyani o‘zgartiring." />
+          <EmptyState emoji="🔍" title="Topilmadi" text="Boshqa so‘z bilan qidirib ko‘ring." />
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-2">
             {filtered.map((product) => {
               const cartItem = state.cart.find((c) => c.productId === product.id && c.modifiers.length === 0);
               const inCartQty = cartItem ? cartItem.qty : 0;
@@ -192,7 +153,7 @@ export function MenuView() {
             })}
           </div>
         )}
-      </section>
+      </div>
 
       {/* Product Details Sheet */}
       <ProductSheet
@@ -204,22 +165,6 @@ export function MenuView() {
         }}
       />
     </div>
-  );
-}
-
-function CategoryChip({ label, emoji, active, onClick }: { label: string; emoji?: string; active: boolean; onClick: () => void }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`tap shrink-0 rounded-2xl px-4 py-2 text-[12.5px] font-bold transition-all ${
-        active
-          ? "bg-gradient-to-r from-brand to-amber-500 text-black shadow-lg shadow-brand/20"
-          : "border border-white/10 bg-white/5 text-white/70 hover:bg-white/10"
-      }`}
-    >
-      {emoji ? <span className="mr-1.5">{emoji}</span> : null}
-      {label}
-    </button>
   );
 }
 
@@ -238,83 +183,67 @@ function ProductRow({
   onIncrease: () => void;
   onDecrease: () => void;
 }) {
-  const lowStock = product.stock !== null && product.stock <= 5;
   const hasModifiers = product.modifiers.length > 0;
 
   return (
-    <div className="card rise flex items-stretch gap-3 overflow-hidden border border-white/8 bg-ink-soft/80 p-3">
-      {/* Product Image */}
+    <div className="flex items-center gap-3 rounded-2xl border border-white/5 bg-[#141518] p-2.5 transition-colors">
+      {/* Product Thumbnail */}
       <button
         onClick={onOpen}
-        className="tap relative h-[94px] w-[94px] shrink-0 overflow-hidden rounded-2xl bg-white/4"
+        className="tap relative h-18 w-18 shrink-0 overflow-hidden rounded-xl bg-[#1c1d22]"
       >
         {product.imageUrl ? (
           <img src={product.imageUrl} alt={product.name} className="h-full w-full object-cover" loading="lazy" />
         ) : (
-          <div className="flex h-full items-center justify-center text-4xl">🍔</div>
+          <div className="flex h-full items-center justify-center text-3xl">🍔</div>
         )}
       </button>
 
       {/* Product Info */}
-      <div className="flex min-w-0 flex-1 flex-col justify-between py-0.5">
+      <div className="flex min-w-0 flex-1 flex-col justify-between self-stretch py-0.5">
         <button onClick={onOpen} className="text-left">
-          <div className="flex items-center gap-1.5">
-            <p className="line-clamp-1 text-[15px] font-bold text-white">{product.name}</p>
-            {product.tags?.includes("spicy") ? <span className="text-[12px]">🌶️</span> : null}
-          </div>
-          {product.description ? (
-            <p className="mt-1 line-clamp-2 text-[12px] leading-snug text-white/60">{product.description}</p>
-          ) : null}
+          <p className="line-clamp-1 text-[14px] font-semibold text-white">{product.name}</p>
+          {product.description && (
+            <p className="mt-0.5 line-clamp-1 text-[11.5px] text-zinc-400 leading-snug">{product.description}</p>
+          )}
         </button>
 
-        {/* Price and Add/Qty Controls */}
-        <div className="mt-2.5 flex items-end justify-between gap-2">
-          <div>
-            {product.oldPrice ? (
-              <span className="mr-1.5 text-[11px] text-white/40 line-through">
-                {product.oldPrice.toLocaleString("ru-RU")}
-              </span>
-            ) : null}
-            <Money value={product.price} className="text-[15px] font-black text-brand" />
-            {lowStock ? (
-              <p className="mt-0.5 text-[10.5px] font-medium text-flame">Faqat {product.stock} ta qoldi</p>
-            ) : null}
-          </div>
+        <div className="mt-1 flex items-center justify-between">
+          <Money value={product.price} className="text-[14px] font-bold text-amber-400" />
 
-          <div className="flex items-center gap-1.5">
-            {hasModifiers ? (
+          {/* Action Button */}
+          {hasModifiers ? (
+            <button
+              onClick={onOpen}
+              className="tap rounded-lg bg-[#22232a] px-3 py-1 text-[11.5px] font-semibold text-zinc-200 border border-white/5"
+            >
+              Tanlash
+            </button>
+          ) : cartQty > 0 ? (
+            <div className="flex items-center gap-2 rounded-lg bg-[#1c1d22] p-0.5 border border-white/8">
               <button
-                onClick={onOpen}
-                className="tap flex items-center gap-1 rounded-xl bg-gradient-to-r from-brand to-amber-500 px-3 py-1.5 text-[12px] font-bold text-black shadow-md shadow-brand/20"
+                onClick={onDecrease}
+                className="tap flex h-6 w-6 items-center justify-center rounded-md bg-amber-500 text-black font-bold text-xs"
               >
-                Tanlash
+                −
               </button>
-            ) : cartQty > 0 ? (
-              <div className="flex items-center gap-2 rounded-xl border border-brand/30 bg-brand/10 p-1">
-                <button
-                  onClick={onDecrease}
-                  className="tap flex h-7 w-7 items-center justify-center rounded-lg bg-brand text-black font-black text-sm"
-                >
-                  −
-                </button>
-                <span className="text-xs font-black text-white px-1">{cartQty}</span>
-                <button
-                  onClick={onIncrease}
-                  className="tap flex h-7 w-7 items-center justify-center rounded-lg bg-brand text-black font-black text-sm"
-                >
-                  +
-                </button>
-              </div>
-            ) : (
+              <span className="text-xs font-bold text-white px-1">{cartQty}</span>
               <button
-                onClick={onAdd}
-                className="tap flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-r from-brand to-amber-500 text-black shadow-md shadow-brand/20 font-black text-base"
-                aria-label="Qo‘shish"
+                onClick={onIncrease}
+                className="tap flex h-6 w-6 items-center justify-center rounded-md bg-amber-500 text-black font-bold text-xs"
               >
                 +
               </button>
-            )}
-          </div>
+            </div>
+          ) : (
+            <button
+              onClick={onAdd}
+              className="tap flex h-7 w-7 items-center justify-center rounded-lg bg-amber-500 text-black font-bold text-sm shadow-sm"
+              aria-label="Qo‘shish"
+            >
+              +
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -379,41 +308,36 @@ function ProductSheet({
               );
               onAdded();
             }}
-            className="tap btn-primary flex-1 py-3 text-[15px] font-extrabold"
+            className="tap btn-primary flex-1 py-3 text-[14px] font-bold"
           >
             Qo‘shish · {total.toLocaleString("ru-RU")} so‘m
           </button>
         </div>
       }
     >
-      <div className="mb-4 h-[180px] overflow-hidden rounded-2xl bg-white/4">
+      <div className="mb-4 h-[160px] overflow-hidden rounded-xl bg-[#1c1d22]">
         {activeProduct.imageUrl ? (
           <img src={activeProduct.imageUrl} alt={activeProduct.name} className="h-full w-full object-cover" />
         ) : (
-          <div className="flex h-full items-center justify-center text-6xl">🌭</div>
+          <div className="flex h-full items-center justify-center text-5xl">🌭</div>
         )}
       </div>
 
-      <div className="mb-4 flex items-center gap-2">
-        <Money value={activeProduct.price} className="text-[18px] font-black text-brand" />
-        {activeProduct.stock !== null ? (
-          <span className={`rounded-full border px-2 py-0.5 text-[10.5px] ${activeProduct.stock > 5 ? "border-mint/30 text-mint" : "border-flame/40 text-flame"}`}>
-            {activeProduct.stock > 0 ? `Omborda: ${activeProduct.stock}` : "Tugagan"}
-          </span>
-        ) : null}
+      <div className="mb-3 flex items-center justify-between">
+        <Money value={activeProduct.price} className="text-[17px] font-bold text-amber-400" />
       </div>
 
       {groups.map((group) => (
-        <div key={group.name} className="mb-4">
-          <p className="mb-2 text-[13px] font-bold text-white/90">{group.name}</p>
-          <div className="space-y-2">
+        <div key={group.name} className="mb-3">
+          <p className="mb-1.5 text-[12px] font-bold text-zinc-400 uppercase tracking-wider">{group.name}</p>
+          <div className="space-y-1.5">
             {group.modifiers.map((modifier) => {
               const count = selected[modifier.id] ?? 0;
               return (
-                <div key={modifier.id} className="flex items-center justify-between rounded-xl border border-white/8 bg-white/4 px-3 py-2.5">
+                <div key={modifier.id} className="flex items-center justify-between rounded-xl border border-white/5 bg-[#18191d] px-3 py-2">
                   <div className="min-w-0 pr-2">
-                    <p className="truncate text-[13.5px] font-medium text-white">{modifier.name}</p>
-                    <p className="text-[11.5px] text-muted">
+                    <p className="truncate text-[13px] font-medium text-white">{modifier.name}</p>
+                    <p className="text-[11px] text-zinc-400">
                       {modifier.price > 0 ? `+${modifier.price.toLocaleString("ru-RU")} so‘m` : "Bepul"}
                     </p>
                   </div>
@@ -423,9 +347,9 @@ function ProductSheet({
                         haptic("light");
                         setSelected((prev) => ({ ...prev, [modifier.id]: 1 }));
                       }}
-                      className="tap rounded-lg border border-white/15 bg-white/6 px-3 py-1.5 text-[12px] font-semibold text-white"
+                      className="tap rounded-lg bg-[#22232a] px-2.5 py-1 text-[11.5px] font-semibold text-zinc-300 border border-white/5"
                     >
-                      Qo‘shish
+                      + Qo‘shish
                     </button>
                   ) : (
                     <QtyStepper
@@ -450,14 +374,14 @@ function ProductSheet({
       ))}
 
       <div className="mb-2">
-        <p className="mb-2 text-[13px] font-bold text-white/90">Izoh (ixtiyoriy)</p>
+        <p className="mb-1 text-[12px] font-bold text-zinc-400 uppercase tracking-wider">Izoh</p>
         <textarea
           value={note}
-          onChange={(event) => setNote(event.target.value)}
+          onChange={(e) => setNote(e.target.value)}
           rows={2}
-          maxLength={240}
-          placeholder="Masalan: sousni ko‘proq qiling"
-          className="w-full rounded-xl border border-white/10 bg-white/5 p-2.5 text-sm text-white placeholder-white/40 focus:border-brand focus:outline-none"
+          maxLength={200}
+          placeholder="Oshxona uchun maxsus istak..."
+          className="w-full rounded-xl border border-white/8 bg-[#18191d] p-2.5 text-[13px] text-white placeholder-zinc-500 focus:border-amber-500 focus:outline-none"
         />
       </div>
     </Sheet>

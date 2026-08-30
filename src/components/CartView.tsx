@@ -3,14 +3,14 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-import { Button, EmptyState, Icon, Money, QtyStepper, SectionTitle } from "@/components/ui";
+import { Button, EmptyState, Icon, Money, QtyStepper } from "@/components/ui";
 import { haptic, hapticNotify } from "@/lib/client/telegram";
 import { useApp } from "@/lib/client/store";
 import { formatSum } from "@/lib/format";
 import type { OrderAddress, PaymentMethod, PosProduct } from "@/lib/types";
 
 export function CartView() {
-  const { state, estimate, setQty, removeItem, clearCart, setCheckout, updatePhone, submitOrder, toast, setTab } = useApp();
+  const { state, setQty, removeItem, clearCart, setCheckout, updatePhone, submitOrder, toast, setTab } = useApp();
 
   const [addressLine, setAddressLine] = useState(state.checkout.address?.addressLine || "");
   const [apartment, setApartment] = useState(state.checkout.address?.apartment || "");
@@ -44,23 +44,20 @@ export function CartView() {
     return sum + (product.price + mods) * item.qty;
   }, 0);
 
-  const deliveryFee = 0; // Bepul yetkazib berish
-  const grandTotal = itemsTotal + deliveryFee;
+  const grandTotal = itemsTotal;
 
-  // Auto-sync customer phone if available
   useEffect(() => {
     if (state.customer?.phone && !phone) {
       setPhone(state.customer.phone);
     }
   }, [phone, state.customer?.phone]);
 
-  // GPS Locate function
   const locateMe = () => {
     setLocating(true);
     haptic("light");
     if (!("geolocation" in navigator)) {
       setLocating(false);
-      toast("Brauzer lokatsiyani qo‘llab-quvvatlamaydi. Manzilni yozib qoldiring.", "error");
+      toast("Brauzer lokatsiyani qo‘llab-quvvatlamaydi. Manzilni yozing.", "error");
       return;
     }
 
@@ -74,11 +71,11 @@ export function CartView() {
         }
         setLocating(false);
         hapticNotify("success");
-        toast("Aniq GPS lokatsiyangiz aniqlandi! ✓", "ok");
+        toast("Lokatsiya aniqlandi ✓", "ok");
       },
       () => {
         setLocating(false);
-        toast("Lokatsiyaga ruxsat berilmadi. Manzilni qo‘lda kiriting.", "error");
+        toast("Lokatsiya ruxsati berilmadi. Manzilni qo‘lda kiriting.", "error");
       },
       { enableHighAccuracy: true, timeout: 12000, maximumAge: 30000 },
     );
@@ -86,13 +83,13 @@ export function CartView() {
 
   if (state.cart.length === 0) {
     return (
-      <div className="px-4 py-8">
+      <div className="px-4 py-12">
         <EmptyState
           emoji="🛒"
           title="Savatchangiz bo‘sh"
-          text="Menyudan mazali hotdog, burger yoki ichimlik tanlang."
+          text="Menyudan taom tanlang."
           action={
-            <Button variant="primary" onClick={() => setTab("menu")} className="px-6 py-3 font-bold">
+            <Button variant="primary" onClick={() => setTab("menu")} className="px-5 py-2.5 text-xs font-bold">
               Menyuga o‘tish ➔
             </Button>
           }
@@ -103,7 +100,7 @@ export function CartView() {
 
   const handleConfirmOrder = async () => {
     if (!addressLine.trim() && !coords) {
-      toast("Iltimos, yetkazib berish manzilini kiriting yoki GPS tugmasini bosing.", "error");
+      toast("Iltimos, manzilni kiriting yoki GPS tugmasini bosing.", "error");
       hapticNotify("error");
       return;
     }
@@ -146,30 +143,27 @@ export function CartView() {
         setTab("orders");
       }
     } catch (error) {
-      toast(error instanceof Error ? error.message : "Buyurtma yuborishda xatolik.", "error");
+      toast(error instanceof Error ? error.message : "Xatolik yuz berdi.", "error");
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <div className="px-4 pb-28 pt-3">
-      {/* Top Header */}
-      <div className="mb-4 flex items-center justify-between">
-        <div>
-          <h1 className="text-[20px] font-black text-white">Savatcha va Buyurtma</h1>
-          <p className="text-[12px] text-white/50">{state.cart.length} xil taom tanlandi</p>
-        </div>
+    <div className="px-4 pb-28 pt-3 max-w-lg mx-auto">
+      {/* Header */}
+      <div className="mb-3 flex items-center justify-between">
+        <h1 className="text-[17px] font-bold text-white">Savatcha ({state.cart.length})</h1>
         <button
           onClick={clearCart}
-          className="tap rounded-xl border border-flame/30 bg-flame/10 px-3 py-1.5 text-[11.5px] font-bold text-flame hover:bg-flame/20"
+          className="tap text-[11.5px] font-semibold text-red-400 hover:text-red-300"
         >
           Tozalash
         </button>
       </div>
 
       {/* Cart Items List */}
-      <div className="mb-5 space-y-2.5">
+      <div className="mb-4 space-y-1.5">
         {state.cart.map((item) => {
           const product = productById.get(item.productId);
           if (!product) return null;
@@ -189,30 +183,43 @@ export function CartView() {
             }, 0);
 
           return (
-            <div key={item.key} className="card flex items-stretch gap-3 border border-white/8 bg-ink-soft/80 p-3">
-              <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-white/4">
+            <div key={item.key} className="flex items-center gap-3 rounded-2xl border border-white/5 bg-[#141518] p-2.5">
+              <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-[#1c1d22]">
                 {product.imageUrl ? (
                   <img src={product.imageUrl} alt={product.name} className="h-full w-full object-cover" />
                 ) : (
                   <div className="flex h-full items-center justify-center text-2xl">🍔</div>
                 )}
               </div>
-              <div className="min-w-0 flex-1 flex flex-col justify-between">
-                <div>
-                  <p className="truncate text-[14px] font-bold text-white">{product.name}</p>
-                  {modNames ? <p className="text-[11px] text-white/60 line-clamp-1">{modNames}</p> : null}
-                  {item.note ? <p className="text-[11px] text-brand/80 italic">“{item.note}”</p> : null}
+              <div className="min-w-0 flex-1">
+                <div className="flex items-start justify-between gap-1">
+                  <p className="truncate text-[13.5px] font-semibold text-white">{product.name}</p>
+                  <button
+                    onClick={() => removeItem(item.key)}
+                    className="tap text-zinc-500 hover:text-red-400 p-0.5"
+                  >
+                    <Icon name="trash" className="h-3.5 w-3.5" />
+                  </button>
                 </div>
-                <div className="mt-2 flex items-center justify-between">
-                  <Money value={unit * item.qty} className="text-[14px] font-extrabold text-brand" />
-                  <div className="flex items-center gap-2">
-                    <QtyStepper size="sm" value={item.qty} onChange={(next) => setQty(item.key, next)} />
+                {modNames && <p className="text-[11px] text-zinc-400 truncate">{modNames}</p>}
+                <div className="mt-1 flex items-center justify-between">
+                  <Money value={unit * item.qty} className="text-[13px] font-bold text-amber-400" />
+                  <div className="flex items-center gap-1.5 rounded-lg bg-[#1c1d22] px-1 py-0.5 border border-white/5">
                     <button
-                      onClick={() => removeItem(item.key)}
-                      className="tap p-1.5 text-white/40 hover:text-flame"
-                      aria-label="O‘chirish"
+                      onClick={() => {
+                        if (item.qty <= 1) removeItem(item.key);
+                        else setQty(item.key, item.qty - 1);
+                      }}
+                      className="tap flex h-5 w-5 items-center justify-center rounded bg-zinc-800 text-xs font-bold text-white"
                     >
-                      <Icon name="trash" className="h-4 w-4" />
+                      −
+                    </button>
+                    <span className="text-xs font-bold text-white px-1">{item.qty}</span>
+                    <button
+                      onClick={() => setQty(item.key, item.qty + 1)}
+                      className="tap flex h-5 w-5 items-center justify-center rounded bg-amber-500 text-xs font-bold text-black"
+                    >
+                      +
                     </button>
                   </div>
                 </div>
@@ -222,181 +229,151 @@ export function CartView() {
         })}
       </div>
 
-      {/* DELIVERY DETAILS FORM (FOCUSED & LARGE) */}
-      <div className="mb-5 rounded-3xl border border-brand/20 bg-gradient-to-b from-brand/10 via-white/4 to-white/2 p-4 shadow-xl">
-        <div className="mb-3 flex items-center gap-2">
-          <span className="flex h-7 w-7 items-center justify-center rounded-xl bg-brand text-sm font-black text-black">
-            📍
-          </span>
-          <div>
-            <h2 className="text-[16px] font-black text-white">Yetkazib berish manzili</h2>
-            <p className="text-[11px] text-white/50">Kuryer tez yetib borishi uchun aniq kiriting</p>
-          </div>
+      {/* DELIVERY DETAILS FORM */}
+      <div className="mb-4 rounded-2xl border border-white/5 bg-[#141518] p-3.5 space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-[14px] font-bold text-white flex items-center gap-1.5">
+            <span>📍</span> Yetkazib berish manzili
+          </h2>
+          {coords && <span className="text-[11px] font-semibold text-emerald-400">✓ GPS faol</span>}
         </div>
 
-        {/* Big GPS Auto-Locate Button */}
+        {/* GPS Locate Button */}
         <button
           onClick={locateMe}
           disabled={locating}
-          className={`tap mb-3 flex w-full items-center justify-center gap-2 rounded-2xl p-3.5 text-[13.5px] font-black transition-all ${
+          className={`tap flex w-full items-center justify-center gap-2 rounded-xl py-2.5 px-3 text-[12.5px] font-bold transition-all ${
             coords
-              ? "bg-mint/20 border border-mint/40 text-mint"
-              : "bg-gradient-to-r from-brand to-amber-500 text-black shadow-lg shadow-brand/25 hover:opacity-95"
+              ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+              : "bg-[#22232a] text-zinc-200 border border-white/8 hover:border-amber-500/50"
           }`}
         >
-          {locating ? (
-            <span>⏳ Lokatsiya aniqlanmoqda...</span>
-          ) : coords ? (
-            <span>✓ GPS lokatsiyangiz aniqlandi ({coords.lat}, {coords.lng})</span>
-          ) : (
-            <>
-              <span>📍 Mening aniq lokatsiyamni aniqlash (GPS)</span>
-            </>
-          )}
+          {locating ? "⏳ Aniqlanmoqda..." : coords ? "✓ GPS lokatsiyangiz olindi" : "📍 Joylashuvimni aniqlash (GPS)"}
         </button>
 
-        {/* Address Fields */}
-        <div className="space-y-2.5">
+        {/* Form Inputs */}
+        <div className="space-y-2">
           <div>
-            <label className="mb-1 block text-[11.5px] font-bold text-white/70">
-              Ko‘cha / Uy raqami / Bino:
-            </label>
+            <label className="mb-1 block text-[11px] font-semibold text-zinc-400">Manzil / Ko‘cha va bino:</label>
             <input
               value={addressLine}
               onChange={(e) => setAddressLine(e.target.value)}
-              placeholder="Masalan: Chilonzor 9-mavze, 12-uy"
-              className="w-full rounded-xl border border-white/10 bg-black/40 px-3.5 py-2.5 text-[13.5px] text-white placeholder-white/30 focus:border-brand focus:outline-none"
+              placeholder="Masalan: Chilonzor 9, 12-uy"
+              className="w-full rounded-xl border border-white/8 bg-[#18191d] px-3 py-2 text-[13px] text-white placeholder-zinc-500 focus:border-amber-500 focus:outline-none"
             />
           </div>
 
           <div className="grid grid-cols-3 gap-2">
             <div>
-              <label className="mb-1 block text-[11px] font-semibold text-white/60">Podyezd:</label>
+              <label className="mb-1 block text-[10.5px] font-medium text-zinc-400">Podyezd:</label>
               <input
                 value={entrance}
                 onChange={(e) => setEntrance(e.target.value)}
                 placeholder="2"
-                className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-[13px] text-white focus:border-brand focus:outline-none"
+                className="w-full rounded-xl border border-white/8 bg-[#18191d] px-2.5 py-1.5 text-[12.5px] text-white focus:border-amber-500 focus:outline-none"
               />
             </div>
             <div>
-              <label className="mb-1 block text-[11px] font-semibold text-white/60">Qavat:</label>
+              <label className="mb-1 block text-[10.5px] font-medium text-zinc-400">Qavat:</label>
               <input
                 value={floor}
                 onChange={(e) => setFloor(e.target.value)}
                 placeholder="4"
-                className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-[13px] text-white focus:border-brand focus:outline-none"
+                className="w-full rounded-xl border border-white/8 bg-[#18191d] px-2.5 py-1.5 text-[12.5px] text-white focus:border-amber-500 focus:outline-none"
               />
             </div>
             <div>
-              <label className="mb-1 block text-[11px] font-semibold text-white/60">Xonadon:</label>
+              <label className="mb-1 block text-[10.5px] font-medium text-zinc-400">Xonadon:</label>
               <input
                 value={apartment}
                 onChange={(e) => setApartment(e.target.value)}
                 placeholder="45"
-                className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-[13px] text-white focus:border-brand focus:outline-none"
+                className="w-full rounded-xl border border-white/8 bg-[#18191d] px-2.5 py-1.5 text-[12.5px] text-white focus:border-amber-500 focus:outline-none"
               />
             </div>
           </div>
 
           <div>
-            <label className="mb-1 block text-[11.5px] font-bold text-white/70">
-              Mo‘ljal (Landmark):
-            </label>
+            <label className="mb-1 block text-[11px] font-semibold text-zinc-400">Mo‘ljal (ixtiyoriy):</label>
             <input
               value={landmark}
               onChange={(e) => setLandmark(e.target.value)}
-              placeholder="Masalan: 4-maktab yaqinida, Makro ro‘parasi"
-              className="w-full rounded-xl border border-white/10 bg-black/40 px-3.5 py-2.5 text-[13px] text-white placeholder-white/30 focus:border-brand focus:outline-none"
+              placeholder="Masalan: Makro ro‘parasi"
+              className="w-full rounded-xl border border-white/8 bg-[#18191d] px-3 py-2 text-[12.5px] text-white placeholder-zinc-500 focus:border-amber-500 focus:outline-none"
             />
           </div>
 
           <div>
-            <label className="mb-1 block text-[11.5px] font-bold text-white/70">
-              Telefon raqamingiz:
-            </label>
+            <label className="mb-1 block text-[11px] font-semibold text-zinc-400">Telefon raqam:</label>
             <input
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="+998 90 123 45 67"
-              className="w-full rounded-xl border border-white/10 bg-black/40 px-3.5 py-2.5 text-[13.5px] font-bold text-brand placeholder-white/30 focus:border-brand focus:outline-none"
+              className="w-full rounded-xl border border-white/8 bg-[#18191d] px-3 py-2 text-[13px] font-bold text-amber-400 placeholder-zinc-500 focus:border-amber-500 focus:outline-none"
             />
           </div>
 
           <div>
-            <label className="mb-1 block text-[11.5px] font-semibold text-white/60">
-              Kuryer / Oshxona uchun izoh (ixtiyoriy):
-            </label>
+            <label className="mb-1 block text-[11px] font-semibold text-zinc-400">Kuryer uchun izoh:</label>
             <input
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              placeholder="Masalan: Domofon 45, yetganda telefon qiling"
-              className="w-full rounded-xl border border-white/10 bg-black/40 px-3.5 py-2 text-[12.5px] text-white placeholder-white/30 focus:border-brand focus:outline-none"
+              placeholder="Masalan: Domofon 45"
+              className="w-full rounded-xl border border-white/8 bg-[#18191d] px-3 py-2 text-[12.5px] text-white placeholder-zinc-500 focus:border-amber-500 focus:outline-none"
             />
           </div>
         </div>
       </div>
 
-      {/* PAYMENT METHOD SELECTOR */}
-      <div className="mb-5 rounded-3xl border border-white/8 bg-ink-soft/80 p-4">
-        <h3 className="mb-3 text-[14px] font-bold text-white">To‘lov turini tanlang</h3>
-        <div className="grid grid-cols-2 gap-2.5">
+      {/* PAYMENT METHOD */}
+      <div className="mb-4 rounded-2xl border border-white/5 bg-[#141518] p-3.5">
+        <h3 className="mb-2 text-[12px] font-bold text-zinc-400 uppercase tracking-wider">To‘lov turi</h3>
+        <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
             onClick={() => {
               haptic("light");
               setMethod("cash");
             }}
-            className={`tap flex items-center justify-center gap-2 rounded-2xl border p-3 text-[13px] font-bold transition-all ${
+            className={`tap flex items-center justify-center gap-1.5 rounded-xl py-2.5 text-[12.5px] font-semibold border transition-all ${
               method === "cash"
-                ? "border-brand bg-brand/15 text-brand shadow-md shadow-brand/10"
-                : "border-white/10 bg-white/4 text-white/60 hover:bg-white/8"
+                ? "border-amber-500 bg-amber-500/10 text-amber-400"
+                : "border-white/5 bg-[#18191d] text-zinc-400"
             }`}
           >
-            <span className="text-base">💵</span> Naqd pul
+            💵 Naqd pul
           </button>
-
           <button
             type="button"
             onClick={() => {
               haptic("light");
               setMethod("card_transfer");
             }}
-            className={`tap flex items-center justify-center gap-2 rounded-2xl border p-3 text-[13px] font-bold transition-all ${
+            className={`tap flex items-center justify-center gap-1.5 rounded-xl py-2.5 text-[12.5px] font-semibold border transition-all ${
               method === "card_transfer"
-                ? "border-brand bg-brand/15 text-brand shadow-md shadow-brand/10"
-                : "border-white/10 bg-white/4 text-white/60 hover:bg-white/8"
+                ? "border-amber-500 bg-amber-500/10 text-amber-400"
+                : "border-white/5 bg-[#18191d] text-zinc-400"
             }`}
           >
-            <span className="text-base">💳</span> Karta o‘tkazma
+            💳 Karta o‘tkazma
           </button>
         </div>
       </div>
 
-      {/* TOTALS & CONFIRM CTA */}
-      <div className="rounded-3xl border border-white/10 bg-ink-soft p-4 shadow-2xl">
-        <div className="space-y-2 text-[13px]">
-          <div className="flex justify-between text-white/60">
-            <span>Taomlar jami:</span>
-            <span className="font-bold text-white">{formatSum(itemsTotal)} so‘m</span>
-          </div>
-          <div className="flex justify-between text-white/60">
-            <span>Yetkazib berish:</span>
-            <span className="font-bold text-mint">Bepul</span>
-          </div>
-          <div className="flex items-center justify-between border-t border-white/10 pt-2 text-[16px] font-black text-white">
-            <span>Jami to‘lov:</span>
-            <span className="text-[18px] text-brand">{formatSum(grandTotal)} so‘m</span>
-          </div>
+      {/* CONFIRM BUTTON */}
+      <div className="rounded-2xl border border-white/5 bg-[#141518] p-3.5 space-y-2.5">
+        <div className="flex items-center justify-between text-[15px] font-bold text-white">
+          <span>Jami:</span>
+          <span className="text-[17px] text-amber-400">{formatSum(grandTotal)} so‘m</span>
         </div>
 
         <Button
-          className="mt-4 w-full py-4 text-[16px] font-black uppercase tracking-wider bg-gradient-to-r from-brand via-amber-400 to-brand-deep text-black shadow-2xl shadow-brand/30"
+          className="w-full py-3.5 text-[14.5px] font-bold bg-amber-500 text-black hover:bg-amber-400 rounded-xl"
           loading={submitting}
           disabled={submitting}
           onClick={handleConfirmOrder}
         >
-          🚀 Buyurtmani Tasdiqlash · {formatSum(grandTotal)} so‘m
+          Buyurtmani tasdiqlash · {formatSum(grandTotal)} so‘m
         </Button>
       </div>
     </div>
